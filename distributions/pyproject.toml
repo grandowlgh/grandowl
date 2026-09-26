@@ -1,0 +1,17 @@
+[project]
+name = "distributions"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "grandowlgh", email = "tda0016@uah.edu" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+distributions = "distributions:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
