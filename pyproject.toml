@@ -20,6 +20,8 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "src/**/*.rs" }, { file = "C
 [tool.uv.workspace]
 members = [
     "matrix",
+    "distributions",
+    "cvdistributions",
 ]
 
 

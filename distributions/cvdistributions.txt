@@ -1,0 +1,87 @@
+import os
+import math
+import secrets
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+# STEP 1: Programmatically create subpackage and module files
+
+os.makedirs("distributions", exist_ok=True)
+
+# Write distributions/__init__.py
+with open("distributions/__init__.py", "w") as f:
+    f.write("from .cvdistributions import uniform, exponentialdist\n")
+
+# Write distributions/cvdistributions.py
+module_content = """import secrets
+import math
+
+def uniform(a: float = 0.0, b: float = 1.0) -> float:
+    \"\"\"Generates a cryptographically secure uniform random sample in [a, b).\"\"\"
+    u = secrets.randbits(53) / (1 << 53)
+    return a + (b - a) * u
+
+def exponentialdist(lambd: float = 1.0) -> float:
+    \"\"\"Generates an exponentially distributed sample using Inverse Transform Sampling.\"\"\"
+    if lambd <= 0:
+        raise ValueError("Lambda (λ) must be strictly positive.")
+    u = uniform(0.0, 1.0)
+    while u == 0.0:
+        u = uniform(0.0, 1.0)
+    return -math.log(u) / lambd
+"""
+
+with open("distributions/cvdistributions.py", "w") as f:
+    f.write(module_content)
+
+print("Created subpackage 'distributions' with module 'cvdistributions.py'.\n")
+
+
+# STEP 2: Import from the newly created subpackage
+
+from distributions.cvdistributions import uniform, exponentialdist
+
+
+# STEP 3: Part 1 - Uniform Distribution (1,000 and 100,000 samples)
+
+samples_1k_uni = [uniform(0.0, 1.0) for _ in range(1000)]
+print("First 10 uniform samples out of 1,000:", samples_1k_uni[:10])
+
+samples_100k_uni = [uniform(0.0, 1.0) for _ in range(100000)]
+
+
+# STEP 4: Part 2 - Exponential Distribution (100,000 samples)
+
+lambd = 1.5
+samples_100k_exp = [exponentialdist(lambd=lambd) for _ in range(100000)]
+
+
+# STEP 5: Plot Histograms side-by-side
+
+fig, axes = plt.subplots(1, 2, figsize=(16, 5))
+
+# Uniform Plot
+axes[0].hist(samples_100k_uni, bins=50, density=True, color="skyblue", edgecolor="black", alpha=0.7)
+axes[0].axhline(1.0, color="red", linestyle="--", linewidth=2, label="Theoretical PDF ($f(x) = 1$)")
+axes[0].set_title("100,000 Cryptographically Secure Uniform Samples", fontsize=12)
+axes[0].set_xlabel("Value ($x$)")
+axes[0].set_ylabel("Probability Density")
+axes[0].set_xlim(0, 1)
+axes[0].set_ylim(0, 1.25)
+axes[0].legend()
+axes[0].grid(True, linestyle="--", alpha=0.5)
+
+# Exponential Plot
+axes[1].hist(samples_100k_exp, bins=100, density=True, color="salmon", edgecolor="black", alpha=0.7)
+x_vals = np.linspace(0, max(samples_100k_exp), 1000)
+pdf_vals = lambd * np.exp(-lambd * x_vals)
+axes[1].plot(x_vals, pdf_vals, color="black", linewidth=2.5, label=f"Theoretical PDF ($f(x) = {lambd}e^{{-{lambd}x}}$)")
+axes[1].set_title(f"100,000 Exponential Samples ($\lambda = {lambd}$)", fontsize=12)
+axes[1].set_xlabel("Value ($x$)")
+axes[1].set_ylabel("Probability Density")
+axes[1].legend()
+axes[1].grid(True, linestyle="--", alpha=0.5)
+
+plt.tight_layout()
+plt.show()
